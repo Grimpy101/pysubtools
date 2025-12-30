@@ -5,16 +5,11 @@ import yaml
 
 def prepare_reader(f: typing.Any) -> io.TextIOWrapper:
   if isinstance(f, (str, os.PathLike)):
-    f = open(f, 'rb')
-  
-  if isinstance(f, io.TextIOBase):  # Is open text file
-    f = f.detach()
-  elif isinstance(f, io.RawIOBase):  # Is open raw stream
-    f = io.BufferedReader(f)
-  else:
+    return open(f, 'r')
+  try:
+    return io.TextIOWrapper(f)
+  except AttributeError:
     raise TypeError("Load method accepts filename or file object.")
-  
-  return io.TextIOWrapper(f)
 
 class HumanTime(yaml.YAMLObject):
   yaml_loader: typing.Type[yaml.SafeLoader] = yaml.SafeLoader
@@ -357,7 +352,7 @@ class SubtitleUnit:
       i if isinstance(i, str)
       else i.decode('utf-8')
       if isinstance(i, bytes)
-      else SubtitleLine.from_export(i.__dict__)
+      else SubtitleLine.from_export(i)
       for i in lines
     ]
 
@@ -554,20 +549,16 @@ class Subtitle:
       except IOError:
         # TODO Custom exception
         raise
-    
-    if isinstance(output, io.TextIOBase):
-      output = output.detach()
-    elif isinstance(output, io.RawIOBase):
-      output = io.BufferedWriter(output)
-    else:
-      raise TypeError("Save method accepts filename or file object.")
+      
+    try:
+      output = io.TextIOWrapper(output, encoding = 'utf-8')
 
-    output = io.TextIOWrapper(output, encoding = 'utf-8')
+      self.dump(output, human_time = human_time,
+                        allow_unicode = allow_unicode)
 
-    self.dump(output, human_time = human_time,
-                      allow_unicode = allow_unicode)
-
-    if close:
-      output.close()
-    else:
-      output.detach()
+      if close:
+        output.close()
+      else:
+        output.detach()
+    except Exception as e:
+      raise TypeError(f"Save method accepts filename or file object: {e}.")
