@@ -1,0 +1,19 @@
+[project]
+name = "PySubTools"
+version = "0.2.0"
+description = "A set of parsers and exports for subtitles in various formats"
+readme = "README"
+requires-python = ">=3.8"
+dependencies = [
+    "chardet",
+    "setuptools",
+    "state_machine",
+    "PyYAML" 
+]
+
+[project.urls]
+Homepage = "https://github.com/Podnapisi-NET/pysubtools"
+Issues = "https://github.com/Podnapisi-NET/pysubtools/issues"
+
+[dependency-groups]
+dev = ["black", "ruff", "mypy", "coverage"]
