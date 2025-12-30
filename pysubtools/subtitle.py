@@ -4,29 +4,22 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import io
+import os
 import sys
 import yaml
 from .utils import UnicodeMixin
 
-def prepare_reader(f):
-  try:
-    is_str = isinstance(f, basestring)
-  except NameError:
-    # Python3 compat
-    is_str = isinstance(f, str)
-
-  if is_str:
-    f = io.BufferedReader(io.open(f, 'rb'))
-
-  try:
-    if isinstance(f, file):
-      f = io.BufferedReader(io.FileIO(f.fileno(), closefd = False))
-  except NameError:
-      # No need in Python3
-      pass
-
-  if not isinstance(f, io.BufferedIOBase):
+def prepare_reader(f: object) -> io.TextIOWrapper:
+  if isinstance(f, (str, os.PathLike)):
+    f = open(f, 'rb')
+  
+  if isinstance(f, io.TextIOBase):  # Is open text file
+    f = f.detach()
+  elif isinstance(f, io.RawIOBase):  # Is open raw stream
+    f = io.BufferedReader(f)
+  else:
     raise TypeError("Load method accepts filename or file object.")
+  
   return io.TextIOWrapper(f)
 
 class HumanTime(yaml.YAMLObject, UnicodeMixin):
