@@ -84,30 +84,26 @@ class HumanTime(yaml.YAMLObject):
   def to_seconds(self) -> float:
     return self.hours * 3600 + self.minutes * 60 + self.seconds
 
-class Frame(yaml.YAMLObject, UnicodeMixin):
-  yaml_loader = yaml.SafeLoader
-  yaml_dumper = yaml.SafeDumper
+class Frame(yaml.YAMLObject):
+  yaml_loader: typing.Type[yaml.SafeLoader] = yaml.SafeLoader
+  yaml_dumper: typing.Type[yaml.SafeDumper] = yaml.SafeDumper
 
-  yaml_tag = '!frame'
+  yaml_tag: str = '!frame'
 
-  def __init__(self, frame):
+  def __init__(self, frame: int) -> None:
     self._frame = frame
 
   @classmethod
-  def from_yaml(cls, loader, node):
+  def from_yaml(cls, loader: yaml.Loader, node: typing.Union[yaml.MappingNode, yaml.ScalarNode]) -> 'Frame':
     value = loader.construct_scalar(node)
     return cls(int(value))
 
   @classmethod
-  def to_yaml(cls, dumper, data):
+  def to_yaml(cls, dumper: yaml.Dumper, data: typing.Union[int, 'Frame']) -> yaml.ScalarNode:
     if isinstance(data, int):
       data = cls(data)
 
-    try:
-      return dumper.represent_scalar('!frame', unicode(data._frame))
-    except NameError:
-      # Python3 compat
-      return dumper.represent_scalar('!frame', str(data._frame))
+    return dumper.represent_scalar('!frame', str(data._frame))
 
   def __int__(self):
     raise ValueError("Cannot convert frame to time without specified FPS.")
@@ -115,19 +111,19 @@ class Frame(yaml.YAMLObject, UnicodeMixin):
   def __float__(self):
     raise ValueError("Cannot convert frame to time without specified FPS.")
 
-  def __eq__(self, value):
+  def __eq__(self, value: object) -> bool:
     return self._frame == value
 
-  def __hash__(self):
+  def __hash__(self) -> int:
     return hash(self._frame)
 
-  def __gt__(self, value):
+  def __gt__(self, value: int) -> bool:
     return self._frame > value
 
-  def __lt__(self, value):
+  def __lt__(self, value: int) -> bool:
     return self._frame < value
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return 'Frame({})'.format(self._frame)
 
 class SubtitleLine(UnicodeMixin, object):
