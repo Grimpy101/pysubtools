@@ -12,7 +12,7 @@ class NoParserError(Exception):
   pass
 
 class ParseError(Exception):
-  def __init__(self, line_number, column, line, description):
+  def __init__(self, line_number: int, column: int, line: str, description: str) -> None:
     self.line_number = line_number
     self.column = column
     self.line = line
@@ -20,7 +20,7 @@ class ParseError(Exception):
     super(ParseError, self).__init__(self.description)
 
   def __str__(self):
-    return str(unicode(self))
+    return str(self)
 
   def __unicode__(self):
     return u"Parse error on line {} at column {} error occurred '{}'".format(
@@ -37,7 +37,7 @@ class ParseWarning(ParseError):
       self.description
     )
 
-class Parser(object):
+class Parser:
   """Abstract class for all parsers.
   """
   LEVELS = (
@@ -50,7 +50,7 @@ class Parser(object):
   encoding = None
   encoding_confidence = None
 
-  def __init__(self, stop_level = 'error'):
+  def __init__(self, stop_level: str = 'error') -> None:
     self.warnings = []
     self.errors = []
     self._data = None
@@ -58,23 +58,18 @@ class Parser(object):
 
     # Part of the parser internals
     self._read_lines = []
-    self._current_line_num = -1
+    self._current_line_num: int = -1
     self._current_line = None
 
-  def _add_msg(self, level, line_number, column, line, description):
+  def _add_msg(self, level: str, line_number: int, column: int, line: str, description: str) -> None:
     if self._stop_level and self.LEVELS.index(level) >= self.LEVELS.index(self._stop_level):
       if level == 'warning':
         raise ParseWarning(line_number, column, line, description)
       elif level == 'error':
         raise ParseError(line_number, column, line, description)
-
-    try:
-      line = unicode(line)
-      description = unicode(description)
-    except NameError:
-      # Python3 compat
-      line = str(line)
-      description = str(description)
+      
+    line = str(line)
+    description = str(description)
 
     msg = {
       'line_number': int(line_number),
