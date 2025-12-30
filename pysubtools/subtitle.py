@@ -561,7 +561,7 @@ class Subtitle:
       output = output.detach()
     elif isinstance(output, io.RawIOBase):
       output = io.BufferedWriter(output)
-    elif not isinstance(output, io.BufferedIOBase):
+    else:
       raise TypeError("Save method accepts filename or file object.")
 
     output = io.TextIOWrapper(output, encoding = 'utf-8')
