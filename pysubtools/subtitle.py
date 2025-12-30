@@ -1,6 +1,7 @@
 import io
 import os
 import sys
+import typing
 import yaml
 from .utils import UnicodeMixin
 
@@ -17,34 +18,31 @@ def prepare_reader(f: object) -> io.TextIOWrapper:
   
   return io.TextIOWrapper(f)
 
-class HumanTime(yaml.YAMLObject, UnicodeMixin):
-  yaml_loader = yaml.SafeLoader
-  yaml_dumper = yaml.SafeDumper
+class HumanTime(yaml.YAMLObject):
+  yaml_loader: typing.Type[yaml.SafeLoader] = yaml.SafeLoader
+  yaml_dumper: typing.Type[yaml.SafeDumper] = yaml.SafeDumper
 
-  yaml_tag = '!human_time'
+  yaml_tag: str = '!human_time'
 
-  def __init__(self, hours = 0, minutes = 0, seconds = 0.):
+  def __init__(self, hours: int = 0, minutes: int = 0, seconds: float = 0.) -> None:
     self.hours   = int(hours)
     self.minutes = int(minutes)
     self.seconds = float(seconds)
 
   @classmethod
-  def from_yaml(cls, loader, node):
+  def from_yaml(cls, loader: yaml.Loader, node: typing.Union[yaml.ScalarNode, yaml.MappingNode]) -> float:
     value = loader.construct_scalar(node)
     return float(cls.from_string(value))
 
   @classmethod
-  def to_yaml(cls, dumper, data):
+  def to_yaml(cls, dumper: yaml.Dumper, data: object) -> yaml.ScalarNode:
     if isinstance(data, (int, float)):
       data = cls.from_seconds(data)
 
-    try:
-      return dumper.represent_scalar('!human_time', unicode(data))
-    except NameError:
-      return dumper.represent_scalar('!human_time', str(data))
+    return dumper.represent_scalar('!human_time', str(data))
 
   @classmethod
-  def from_seconds(cls, time):
+  def from_seconds(cls, time: float) -> 'HumanTime':
     obj = cls()
     time = float(time)
     obj.hours = int(time // 3600)
@@ -55,36 +53,35 @@ class HumanTime(yaml.YAMLObject, UnicodeMixin):
     return obj
 
   @classmethod
-  def from_string(cls, time):
+  def from_string(cls, time: object) -> 'HumanTime':
     obj = cls()
 
-    try:
-      is_str = isinstance(time, basestring)
-    except NameError:
-      is_str = isinstance(time, str)
-
-    if is_str:
-      time = time.split(':')
-      obj.hours = int(time[0])
-      obj.minutes = int(time[1])
-      obj.seconds = float(time[2])
+    # TODO: Should this be try/catch?
+    if isinstance(time, str):
+      time_split = time.split(':')
+      obj.hours = int(time_split[0])
+      obj.minutes = int(time_split[1])
+      obj.seconds = float(time_split[2])
     else:
       raise TypeError("Unknown time format.")
 
     return obj
 
-  def __unicode__(self):
+  def __unicode__(self) -> str:
     return '{:02d}:{:02d}:{:06.3f}'.format(self.hours,
                                            self.minutes,
                                            self.seconds)
+  
+  def __str__(self) -> str:
+    return self.__unicode__()
 
-  def __float__(self):
+  def __float__(self) -> float:
     return self.to_seconds()
 
-  def __int__(self):
+  def __int__(self) -> int:
     return int(self.to_seconds())
 
-  def to_seconds(self):
+  def to_seconds(self) -> float:
     return self.hours * 3600 + self.minutes * 60 + self.seconds
 
 class Frame(yaml.YAMLObject, UnicodeMixin):
