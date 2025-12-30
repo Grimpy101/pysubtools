@@ -126,23 +126,21 @@ class Frame(yaml.YAMLObject):
   def __repr__(self) -> str:
     return 'Frame({})'.format(self._frame)
 
-class SubtitleLine(UnicodeMixin, object):
+class SubtitleLine:
   """
   Class representing a line inside SubtitleUnit. It acts as an ordinary
-  unicode objects, but has an ability to store additional metadata.
+  unicode objects, but has the ability to store additional metadata.
   """
-  # Unhashable
-  __hash__ = None
 
-  def __init__(self, text, **kwargs):
+  def __init__(self, text: str, **kwargs) -> None:
     self.text = text
     # Update with additional metadata
     self.__dict__.update(kwargs)
 
-  def export(self):
+  def export(self) -> typing.Union[str, typing.Dict[str, typing.Any]]:
     """Returns line in format for export."""
     output = dict(self.__dict__)
-    text = output.pop('text', '')
+    text: str = output.pop('text', '')
     if not output:
       output = text
     else:
@@ -150,35 +148,31 @@ class SubtitleLine(UnicodeMixin, object):
     return output
 
   @classmethod
-  def from_export(cls, obj):
+  def from_export(cls, obj: typing.Dict) -> 'SubtitleLine':
     return cls(**obj)
 
-  def __unicode__(self):
+  def __unicode__(self) -> str:
     return self.text
+  
+  def __str__(self) -> str:
+    return self.__unicode__()
 
-  if sys.version_info[0] >= 3: # Python 3
-    def __repr__(self):
-      return "SubtitleLine({}{})".format(
-        self.text,
-        (', ' + ', '.join([' = '.join([k, str(v)]) for k, v in self.meta.items()])) if self.meta else ''
-      )
-  else:  # Python 2
-    def __repr__(self):
-      return "SubtitleLine({}{})".format(
-        self.text,
-        (', ' + ', '.join([' = '.join([k, unicode(v)]) for k, v in self.meta.items()])) if self.meta else ''
-      ).encode('utf8')
+  def __repr__(self):
+    return "SubtitleLine({}{})".format(
+      self.text,
+      (', ' + ', '.join([' = '.join([k, str(v)]) for k, v in self.meta.items()])) if self.meta else ''
+    )
 
-  def __eq__(self, other):
+  def __eq__(self, other: object) -> bool:
     if not isinstance(other, SubtitleLine):
       return False
     return self.__dict__ == other.__dict__
 
-  def __len__(self):
+  def __len__(self) -> int:
     return len(self.text)
 
   @property
-  def meta(self):
+  def meta(self) -> typing.Dict[str, typing.Any]:
     d = dict(self.__dict__)
     # Remove important part of metadata
     d.pop('text')
