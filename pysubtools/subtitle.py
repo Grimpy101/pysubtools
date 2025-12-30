@@ -1,9 +1,7 @@
 import io
 import os
-import sys
 import typing
 import yaml
-from .utils import UnicodeMixin
 
 def prepare_reader(f: typing.Any) -> io.TextIOWrapper:
   if isinstance(f, (str, os.PathLike)):
