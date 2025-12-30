@@ -35,7 +35,7 @@ class HumanTime(yaml.YAMLObject):
     return float(cls.from_string(value))
 
   @classmethod
-  def to_yaml(cls, dumper: yaml.Dumper, data: object) -> yaml.ScalarNode:
+  def to_yaml(cls, dumper: yaml.Dumper, data: typing.Union[int, float, 'HumanTime']) -> yaml.ScalarNode:
     if isinstance(data, (int, float)):
       data = cls.from_seconds(data)
 
@@ -53,7 +53,7 @@ class HumanTime(yaml.YAMLObject):
     return obj
 
   @classmethod
-  def from_string(cls, time: object) -> 'HumanTime':
+  def from_string(cls, time: str) -> 'HumanTime':
     obj = cls()
 
     # TODO: Should this be try/catch?
@@ -148,7 +148,7 @@ class SubtitleLine:
     return output
 
   @classmethod
-  def from_export(cls, obj: typing.Dict) -> 'SubtitleLine':
+  def from_export(cls, obj: typing.Mapping[str, typing.Any]) -> 'SubtitleLine':
     return cls(**obj)
 
   def __unicode__(self) -> str:
@@ -163,7 +163,7 @@ class SubtitleLine:
       (', ' + ', '.join([' = '.join([k, str(v)]) for k, v in self.meta.items()])) if self.meta else ''
     )
 
-  def __eq__(self, other: object) -> bool:
+  def __eq__(self, other: typing.Any) -> bool:
     if not isinstance(other, SubtitleLine):
       return False
     return self.__dict__ == other.__dict__
@@ -189,7 +189,7 @@ class SubtitleLines(typing.List):
     return obj
 
   @staticmethod
-  def _validate(value: typing.Any) -> SubtitleLine:
+  def _validate(value: typing.Union[str, SubtitleLine]) -> SubtitleLine:
     if isinstance(value, str):
       value = SubtitleLine(value)
 
@@ -208,7 +208,7 @@ class SubtitleLines(typing.List):
 class SubtitleUnit:
   """Class for holding time and text data of a subtitle unit."""
 
-  def __init__(self, start: typing.Any, end: typing.Any, lines: typing.Optional[typing.Any] = None, **meta):
+  def __init__(self, start: typing.Union[float, Frame], end: typing.Union[float, Frame], lines: typing.Optional[typing.Any] = None, **meta):
     self.start: typing.Union[float, Frame] = float(start) if not isinstance(start, Frame) else start
     self.end: typing.Union[float, Frame] = float(end) if not isinstance(end, Frame) else end
     self._lines = SubtitleLines()
@@ -222,7 +222,7 @@ class SubtitleUnit:
       for line in lines:
         self._lines.append(line)
 
-  def distance(self, other: typing.Any) -> typing.Union[float, Frame]:
+  def distance(self, other: 'SubtitleUnit') -> typing.Union[float, Frame]:
     """Calculates signed distance with other subtitle unit."""
     if not isinstance(other, SubtitleUnit):
       raise TypeError("Can calculate distance only with SubtitleUnit and not '{}'".format(type(other)))
@@ -354,7 +354,7 @@ class SubtitleUnit:
   def from_dict(cls, input: typing.Any) -> 'SubtitleUnit':
     """Creates SubtitleUnit from specified 'input' dict."""
     input = dict(input)
-    lines: typing.List[typing.Union[str, SubtitleLine, object]] = input.pop('lines', [])
+    lines: typing.List[typing.Union[str, bytes, SubtitleLine]] = input.pop('lines', [])
     subtitle_lines = [
       i if isinstance(i, str)
       else i.decode('utf-8')
