@@ -2,13 +2,17 @@
 name = "PySubTools"
 version = "0.2.0"
 description = "A set of parsers and exports for subtitles in various formats"
+authors = [
+    { name = "Gregor Kališnik", email = "gregor@kalisnik.si" },
+    { name = "Unimatrix", email = "info@unimatrix.si" }
+]
 readme = "README"
 requires-python = ">=3.8"
 dependencies = [
-    "chardet",
+    "chardet>=5.0",
     "setuptools",
-    "state_machine",
-    "PyYAML" 
+    "state_machine>=0.2.10",
+    "PyYAML>=6.0" 
 ]
 
 [project.urls]

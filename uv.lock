@@ -770,10 +770,10 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "chardet" },
-    { name = "pyyaml" },
+    { name = "chardet", specifier = ">=5.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "setuptools" },
-    { name = "state-machine" },
+    { name = "state-machine", specifier = ">=0.2.10" },
 ]
 
 [package.metadata.requires-dev]
