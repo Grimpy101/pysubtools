@@ -359,7 +359,7 @@ class SubtitleUnit:
       i if isinstance(i, str)
       else i.decode('utf-8')
       if isinstance(i, bytes)
-      else SubtitleLine.from_export(i)
+      else SubtitleLine.from_export(i.__dict__)
       for i in lines
     ]
 
