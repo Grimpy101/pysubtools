@@ -174,7 +174,6 @@ class TestCase(unittest.TestCase):
                       default_flow_style = False)
             parsed.save(result + '.sif', allow_unicode = False)
             continue
-
           assert d == loaded_d
           assert sub == parsed
 
@@ -213,7 +212,8 @@ class TestCase(unittest.TestCase):
     try:
       sub = parser.parse(f)
     except encodings.EncodingError as e:
-      assert e.tried_encodings == []
+      # chardet now detects Thai Industrial Standard encoding!
+      assert e.tried_encodings == ['TIS-620']
 
   def test_subrip_export(self):
     """Tests SubRip exporter on a simple subtitle."""
